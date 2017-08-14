@@ -13,15 +13,13 @@ def ptlonlat(ln1, lt1, dist, tcin):
     return list1 
 
 def plotcircle(lon, lat, r):
-    for i in range(1, 101):
-        angles = 360*(i/100)    
-        points = ptlonlat(lon, lat, r, angles)
+    angles = [ 360.0*i/100 for i in range(102) ]  
+    points = map(lambda  x: ptlonlat(lon, lat, r, x), angles) 
     return points
 
 def plotcircleV2(lon, lat, r):
-    for i in range(1, 101):
-        angles = 360*(i/100)
-        points = ptlonlat(lon, lat, r, angles)
+    angles = [ 360.0*i/100 for i in range(102) ]  
+    points = map(lambda  x: ptlonlat(lon, lat, r, x), angles) 
     #?
     #?
 
@@ -38,31 +36,30 @@ def findsegments(lineA, RayonB, lon2, lat2):
     extremite1 = calculdist(deg2rad(lineA[1, 1]), deg2rad(lineA[1, 2]), deg2rad(lon2), deg2rad(lat2))
     extremite2 = calculdist(deg2rad(lineA[2, 1]), deg2rad(lineA[2, 2]), deg2rad(lon2), deg2rad(lat2))
     if (extremite1 < RayonB and extremite2 > RayonB) or (extremite1 > RayonB and extremite2 < RayonB):
-        pt = np.mat(lineA[1, 1], lineA[1, 2], lineA[2, 1], lineA[2, 2])
+        pt = [np.mat(lineA[1, 1], lineA[1, 2], lineA[2, 1], lineA[2, 2])]
     for i in range(2, 100):
         extremite1= calculdist(deg2rad(lineA[i,1]), deg2rad(lineA[i,2]), deg2rad(lon2), deg2rad(lat2))
         extremite2 = calculdist(deg2rad(lineA[i+1,1]), deg2rad(lineA[i+1,2]), deg2rad(lon2), deg2rad(lat2))
         if (extremite1 < RayonB and extremite2 > RayonB) or (extremite1 > RayonB and extremite2 < RayonB):
             pointcross = mat(lineA[i, 1], lineA[i, 2], lineA[i+1, 1], lineA[i+1, 2])
-            pt = hstack((pt, pointcross))
-    list4 = pt.tolist()
-    return list4
+            pt = [hstack((pt, pointcross))]
+    return pt
 
 def eqdroite(x1, y1, x2, y2):
     a = (y1-y2)/(x1-x2)
     b = y2-a*x2
-    list2 = list[a, b]
+    list2 = [a, b]
     return list2
 
 def pointinter(eq1, eq2, lon1, lon11, lon2, lon22):
     x = (eq2[2]-eq1[2]) / (eq1[1]-eq2[1])
     y = (eq2[1]*x) + eq2[2]
-    pt = list["init", "init"]
+    pt = ["init", "init"]
     matlon = np.mat((lon1, lon11, lon2, lon22), size=(1, 1))
     maxlon = max(matlon)
     minlon = min(matlon)
     if x >= minlon and x <= maxlon:
-        pt = list[x, y]
+        pt = [x, y]
         return pt
 
 def calculdist(lon1, lat1, lon2, lat2):
