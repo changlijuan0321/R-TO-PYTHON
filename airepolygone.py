@@ -1,6 +1,6 @@
 import numpy as np
 from subfunctions import *  
-import scipy
+from scipy.spatial import ConvexHull
 import math
 
 def airepolygone(matrix, pointenKM):
