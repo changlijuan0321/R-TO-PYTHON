@@ -26,16 +26,16 @@ def newcrosscircle(target, delaysNnodes, lonlatNnodes):
     #"bon"表示是否有交叉点
 
     while indice <= L:
-        kl = kl+1
+        kl += 1
         h = kl
         compteur = indice
-        compteur = compteur+2
+        compteur += 2
         while compteur <= L and h < nlandmarks:
             R1 = delaysNnodes[kl]
             lon1 = lonlatNnodes[kl, 1]
             lat1 = lonlatNnodes[kl, 2]
 
-            h = h+1
+            h += 1
             R2 = delaysNnodes[h]
             lon2 = lonlatNnodes[h, 1]
             lat2 = lonlatNnodes[h, 2]
@@ -68,8 +68,8 @@ def newcrosscircle(target, delaysNnodes, lonlatNnodes):
                                 if(D1 <= R1 and D2 <= R2):
                                     if(ptcross[1]>=-180 and ptcross[1]<=180) and (ptcross[2]>=-90 and ptcross[2]<=90):
                                         f.write(ptcross)
-                                        bon = bon+1
-    indice = indice+2
+                                        bon += 1
+    indice += 2
     return bon
 
 

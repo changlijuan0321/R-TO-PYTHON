@@ -28,12 +28,12 @@ def goodpoints(target, delaysNodes, lonlatNnodes):
                 for z in range(1,npoints):
                     D2 = calculdist(deg2rad(lonlatNnodes[z, 1]), deg2rad(lonlatNnodes[z, 2]), deg2rad(ptcrossing[j, 1]), deg2rad(ptcrossing[j, 2]))
                     if D2 <= delaysNodes[z]:
-                        compteur =  compteur +1
+                        compteur += 1
             #如果点j到所有的landmark之间的距离都小于landmark到target的距离，那么该点就属于goodpoint，存入ficrslt，用于最后的绘图
             if compteur == len(npoints):
                 with open('ficrslt.txt') as f:
                     f.write(ptcrossing[j, :])
-                    test = test + 1
+                    test += 1
         if test == 0:
             with open('ficrslt.txt') as f:
                     f.write('')
