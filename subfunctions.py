@@ -12,6 +12,7 @@ def ptlonlat(ln1, lt1, dist, tcin):
     list1 = [180*lon/math.pi, 180*lat/math.pi]
     return list1 
 
+
 def plotcircle(lon, lat, r):
     angles = [ 360.0*i/100 for i in range(102) ]  
     points = map(lambda  x: ptlonlat(lon, lat, r, x), angles) 
@@ -47,7 +48,7 @@ def findsegments(lineA, RayonB, lon2, lat2):
 
 def eqdroite(x1, y1, x2, y2):
     a = (y1-y2)/(x1-x2)
-    b = y2-a*x2
+    b = y2- a * x2
     list2 = [a, b]
     return list2
 
@@ -68,11 +69,11 @@ def calculdist(lon1, lat1, lon2, lat2):
     return d
 
 def deg2rad(x):
-    y = (x*math.pi)/180
+    y = x*math.pi/180
     return y
 
 def rad2deg(angle):
-    andegre = (180/math.pi)*angle
+    andegre = 180/math.pi*angle
     return andegre
     
 def degre2km(points):

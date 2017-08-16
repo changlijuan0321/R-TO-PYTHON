@@ -62,7 +62,7 @@ def newcrosscircle(target, delaysNnodes, lonlatNnodes):
                             #计算两个直线的交点ptcross
                             ptcross = pointinter(eq1, eq2, ptsegments2[comp, 1], ptsegments2[comp, 3], ptsegments2[ind, 1], ptsegments2[ind, 3])
                             #两个线段不一定在圆内相交，因为eq1、eq2只是两个圆相交的线段，但不表示这两者就是对应的，所以如果相交就存入之前新建的nomfic文件，不然就继续
-                            if ptcross.isdigit:
+                            if int(ptcross):
                                 D1 = calculdist(deg2rad(ptcross[1]), deg2rad(ptcross[2]), deg2rad(lon1),deg2rad(lat1))
                                 D2 = calculdist(deg2rad(ptcross[1]), deg2rad(ptcross[2]), deg2rad(lon2),deg2rad(lat2))
                                 if(D1 <= R1 and D2 <= R2):

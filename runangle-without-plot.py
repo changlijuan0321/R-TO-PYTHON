@@ -6,16 +6,16 @@ import numpy as np
 import lib.tools
 from subfunctions import *  
 
-def runangle(target, delayNnodes, lonlatNnodes, rtt):
-    nblandmark = len(delayNnodes)
+def runangle(target, delaysNnodes, lonlatNnodes, rtt):
+    nblandmark = len(delaysNnodes)
     rttNnodes = rtt[goodlandRTT]
     posminrtt = goodlandRTT.index(rttNnodes)
     figure = str.join("Figure-R/location_estimate_of_",target,".png")
 
     #boolpolygone is a variable to test whether it has a polygon or not
     boolpolygone = 0
-    mindelaysNodes = min(delayNodes)
-    pos = delaynNodes.index(mindelaysNodes)
+    mindelaysNodes = min(delaysNodes)
+    pos = delaysNodes.index(mindelaysNodes)
     ficslt = str.join("Bonpoint/zonecross-", target)
 
     if os.path.exists(ficslt):
@@ -31,7 +31,7 @@ def runangle(target, delayNnodes, lonlatNnodes, rtt):
                 AIRE = math.pi*(delaysNnodes[pos]**2)
                 with open('Rslt_localisation/aire-polygone-v2.dat') as f:
                     f.write([target, lonlatNnodes[pos]])
-                rayon = delayNnodes[pos]
+                rayon = delaysNnodes[pos]
                 boolpolygone = 2
             else:
                 pointcross = np.asmatrix(f.read())   
@@ -151,7 +151,7 @@ def runangle(target, delayNnodes, lonlatNnodes, rtt):
                         boolpolygone = 2
                     else:
                         # we have a point belonging to all the circles
-                        rayon = delayNnodes[pos]
+                        rayon = delaysNnodes[pos]
                         with open('Rslt_localisation/rayon-centroid-v2.dat') as f:
                             f.write([target, rayon])
 

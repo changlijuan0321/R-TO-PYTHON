@@ -13,13 +13,12 @@ def goodpoints(target, delaysNodes, lonlatNnodes):
     
     with open('nomfic.txt') as f:
         npoints = np.array(1,nlandmark)  
-        #处理可能有问题
         mindelaysNodes = min(delaysNodes)
         pos = delaysNodes.index(mindelaysNodes)
         bondist = delaysNodes[pos]     
         ptcrossing = np.asmatrix(f.read())
         #处理可能有问题
-        long = len(ptcrossing[:,1])
+        long = len(ptcrossing[:, 1])
         test = 0
         for j in range(1, long):
             compteur = 0
