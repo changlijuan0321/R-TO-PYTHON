@@ -23,7 +23,7 @@ def newcrosscircle(target, delaysNnodes, lonlatNnodes):
     kl = 0
     indice = 1
     bon = 0
-    #"bon"表示是否有交叉点
+    # "bon"表示是否有交叉点
 
     while indice <= L:
         kl = kl+1
@@ -42,31 +42,43 @@ def newcrosscircle(target, delaysNnodes, lonlatNnodes):
 
             lineA = np.vstack[veclines, indice:(indice+1)]
             lineB = np.vstack[veclines, compteur:(compteur+1)]
-            #分配两个matrix存两个圆
+            # 分配两个matrix存两个圆
 
             compteur = compteur+2
 
-            #测试这两个圆是否相交
+            # 测试这两个圆是否相交
             if cross(lon1, lat1, R1, lon2, lat2, R2) == 1:
                 ptsegments1 = findsegments(lineA, R2, lon2, lat2)
                 ptsegments2 = findsegments(lineB, R1, lon1, lat1)
 
             for comp in range(1, ptsegments1):
                 if ptsegments1[comp,1] != 0:
-                    #计算lineB与lineA的相交一条线段eq1
-                    eq1 = eqdroite(ptsegments1[comp, 1], ptsegments1[comp, 2], ptsegments1[comp, 3], ptsegments1[comp, 4])
+                    # 计算lineB与lineA的相交一条线段eq1
+                    eq1 = eqdroite(ptsegments1[comp, 1], ptsegments1[comp, 2],
+                                   ptsegments1[comp, 3], ptsegments1[comp, 4])
                     for ind in range(1,ptsegments2):
-                        #找到lineB与lineA的一条线段eq2
+                        # 找到lineB与lineA的一条线段eq2
                         if ptsegments2[ind, 1]!=0:
-                            eq2 = eqdroite(ptsegments2[ind, 1], ptsegments2[ind, 2], ptsegments2[ind, 3], ptsegments2[ind, 4])
+                            eq2 = eqdroite(ptsegments2[ind, 1], ptsegments2[ind, 2],
+                                           ptsegments2[ind, 3], ptsegments2[ind, 4])
                             #计算两个直线的交点ptcross
-                            ptcross = pointinter(eq1, eq2, ptsegments2[comp, 1], ptsegments2[comp, 3], ptsegments2[ind, 1], ptsegments2[ind, 3])
-                            #两个线段不一定在圆内相交，因为eq1、eq2只是两个圆相交的线段，但不表示这两者就是对应的，所以如果相交就存入之前新建的nomfic文件，不然就继续
+                            ptcross = pointinter(eq1, eq2,
+                                                 ptsegments2[comp, 1],
+                                                 ptsegments2[comp, 3],
+                                                 ptsegments2[ind, 1],
+                                                 ptsegments2[ind, 3])
+                            # 两个线段不一定在圆内相交，因为eq1、eq2只
+                            # 是两个圆相交的线段，但不表示这两者就是对
+                            # 应的，所以如果相交就存入之前新建的nomfic
+                            # 文件，不然就继续
                             if ptcross.isdigit:
-                                D1 = calculdist(deg2rad(ptcross[1]), deg2rad(ptcross[2]), deg2rad(lon1),deg2rad(lat1))
-                                D2 = calculdist(deg2rad(ptcross[1]), deg2rad(ptcross[2]), deg2rad(lon2),deg2rad(lat2))
+                                D1 = calculdist(deg2rad(ptcross[1]), deg2rad(ptcross[2]),
+                                                deg2rad(lon1), deg2rad(lat1))
+                                D2 = calculdist(deg2rad(ptcross[1]), deg2rad(ptcross[2]),
+                                                deg2rad(lon2), deg2rad(lat2))
                                 if(D1 <= R1 and D2 <= R2):
-                                    if(ptcross[1]>=-180 and ptcross[1]<=180) and (ptcross[2]>=-90 and ptcross[2]<=90):
+                                    if ((ptcross[1]>=-180 and ptcross[1]<=180)
+                                        and (ptcross[2]>=-90 and ptcross[2]<=90)):
                                         f.write(ptcross)
                                         bon = bon+1
     indice = indice+2

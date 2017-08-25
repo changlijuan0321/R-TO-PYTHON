@@ -1,29 +1,41 @@
 import math 
 import numpy as np
+import airepolygone
 
 def ptlonlat(ln1, lt1, dist, tcin):
-    d = dist/6378.16
-    lon1 = math.pi*(ln1/180)
-    lat1 = math.pi*(lt1/180)
-    tc = math.pi*(tcin/180)
-    lat = math.asin(math.sin(lat1)*math.cos(d) + math.cos(lat1)*math.sin(d)*math.cos(tc))
-    dlon = math.atan2(math.sin(tc)*math.sin(d)*math.cos(lat1), math.cos(d)-math.sin(lat1)*math.sin(lat))
-    lon = ((lon1-dlon+math.pi)%(2*math.pi))-math.pi
-    list1 = [180*lon/math.pi, 180*lat/math.pi]
-    return list1 
+    """
+    ln1 - longitude in degree
+    lt1 - latitude in degree
+    dist - distance between landmark and target in kilometer
+    tcin - true course in degree, find the concept of true course at
+           https://en.wikipedia.org/wiki/Course_(navigation)
+    """
+    # convert distance from km to radians
+    d = dist / 6378.16
+    # convert angles from degree to radians
+    lon1 = np.pi * (ln1/180)
+    lat1 = np.pi * (lt1/180)
+    tc = np.pi * (tcin/180)
+    # Aviation Formulary
+    # http://www.edwilliams.org/avform.htm
+    lat = np.arcsin(np.sin(lat1) * np.cos(d) + \
+                    np.cos(lat1) * np.sin(d) * np.cos(tc))
+    dlon = np.arctan2(np.sin(tc) * np.sin(d) * np.cos(lat1),
+                      np.cos(d) - np.sin(lat1) * np.sin(lat))
+    # 对 2π 取模，然后向左平移 π, 保证经度的取值范围 [-π, π]
+    lon = ((lon1 - dlon + np.pi) % (2*np.pi)) - np.pi
+    
+    return [180*lon/np.pi, 180*lat/np.pi]
 
 def plotcircle(lon, lat, r):
-    for i in range(1, 101):
-        angles = 360*(i/100)    
-        points = ptlonlat(lon, lat, r, angles)
-    return points
+    angles = [ 360.0*i/100 for i in range(102) ]
+    points = map(lambda x: ptlonlat(lon, lat, r, x), angles)
+    return list(points)
 
 def plotcircleV2(lon, lat, r):
     for i in range(1, 101):
         angles = 360*(i/100)
         points = ptlonlat(lon, lat, r, angles)
-    #?
-    #?
 
 def cross(lon1, lat1, R1, lon2, lat2, R2):
     distC1C2 = calculdist(deg2rad(lon1), deg2rad(lat1), deg2rad(lon2), deg2rad(lat2))
@@ -45,7 +57,7 @@ def findsegments(lineA, RayonB, lon2, lat2):
         if (extremite1 < RayonB and extremite2 > RayonB) or (extremite1 > RayonB and extremite2 < RayonB):
             pointcross = mat(lineA[i, 1], lineA[i, 2], lineA[i+1, 1], lineA[i+1, 2])
             pt = hstack((pt, pointcross))
-    list4 = pt.tolist()
+            list4 = pt.tolist()
     return list4
 
 def eqdroite(x1, y1, x2, y2):
@@ -77,7 +89,7 @@ def deg2rad(x):
 def rad2deg(angle):
     andegre = (180/math.pi)*angle
     return andegre
-    
+
 def degre2km(points):
     lon2km = np.mat(np.zeros(1, len(points[:1]) - 1))
     lat2km = np.mat(np.zeros(1, len(points[:1]) - 1))
@@ -87,11 +99,11 @@ def degre2km(points):
         lon2km[i] = abs(D2 - D1)
         D3 = calculdist(deg2rad(points[1,1]),deg2rad(points[1,2]+1),deg2rad(points[i,1]),deg2rad(points[i,2]))
         lat2km[i] = abs(D1 - D3)
-    dlon = np.mean(lon2km)
-    dlat = np.mean(lat2km)
-    points[:1] = points[:1] * dlon
-    points[:2] = points[:2] * dlat
-    points = np.hstack(points, [dlon, dlat])
+        dlon = np.mean(lon2km)
+        dlat = np.mean(lat2km)
+        points[:1] = points[:1] * dlon
+        points[:2] = points[:2] * dlat
+        points = np.hstack(points, [dlon, dlat])
 
 #Tracepolygone 函数未处理
 
@@ -112,13 +124,3 @@ def fonctx(a, x, b):
 def mod(y, x):
     resultat = y - x*math.floor(y/x)
     return resultat
-
-
-
-
-
-
-
-
-
-
