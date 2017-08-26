@@ -1,28 +1,28 @@
 import math 
 import numpy as np
+import matplotlib.pyplot as plt
 
 def ptlonlat(ln1, lt1, dist, tcin):
+    # radius of the earth in km; convert distance from km to radians
     d = dist/6378.16
+    # convert angles from degrees to radians
     lon1 = math.pi*(ln1/180)
     lat1 = math.pi*(lt1/180)
     tc = math.pi*(tcin/180)
     lat = math.asin(math.sin(lat1)*math.cos(d) + math.cos(lat1)*math.sin(d)*math.cos(tc))
     dlon = math.atan2(math.sin(tc)*math.sin(d)*math.cos(lat1), math.cos(d)-math.sin(lat1)*math.sin(lat))
-    lon = ((lon1-dlon+math.pi)%(2*math.pi))-math.pi
+    lon = ((lon1-dlon+math.pi)%(2*math.pi)) - math.pi
     list1 = [180*lon/math.pi, 180*lat/math.pi]
-    return list1 
+    return list1
 
 
 def plotcircle(lon, lat, r):
+    # this function gives the coordinates of points which form a given circle
+    # r is in km
+    # lon, lat in degrees
     angles = [ 360.0*i/100 for i in range(102) ]  
-    points = map(lambda  x: ptlonlat(lon, lat, r, x), angles) 
+    points = map(lambda x: ptlonlat(lon, lat, r, x), angles) 
     return points
-
-def plotcircleV2(lon, lat, r):
-    angles = [ 360.0*i/100 for i in range(102) ]  
-    points = map(lambda  x: ptlonlat(lon, lat, r, x), angles) 
-    #?
-    #?
 
 def cross(lon1, lat1, R1, lon2, lat2, R2):
     distC1C2 = calculdist(deg2rad(lon1), deg2rad(lat1), deg2rad(lon2), deg2rad(lat2))
@@ -33,17 +33,17 @@ def cross(lon1, lat1, R1, lon2, lat2, R2):
     return rep
 
 def findsegments(lineA, RayonB, lon2, lat2):
-    pt = np.mat(np.zeros((3, 3)))
+    pt = [np.mat(np.zeros((3, 3)))]
     extremite1 = calculdist(deg2rad(lineA[1, 1]), deg2rad(lineA[1, 2]), deg2rad(lon2), deg2rad(lat2))
     extremite2 = calculdist(deg2rad(lineA[2, 1]), deg2rad(lineA[2, 2]), deg2rad(lon2), deg2rad(lat2))
     if (extremite1 < RayonB and extremite2 > RayonB) or (extremite1 > RayonB and extremite2 < RayonB):
-        pt = [np.mat(lineA[1, 1], lineA[1, 2], lineA[2, 1], lineA[2, 2])]
+        pt = [lineA[1, 1], lineA[1, 2], lineA[2, 1], lineA[2, 2]]
     for i in range(2, 100):
-        extremite1= calculdist(deg2rad(lineA[i,1]), deg2rad(lineA[i,2]), deg2rad(lon2), deg2rad(lat2))
-        extremite2 = calculdist(deg2rad(lineA[i+1,1]), deg2rad(lineA[i+1,2]), deg2rad(lon2), deg2rad(lat2))
+        extremite1= calculdist(deg2rad(lineA[i, 1]), deg2rad(lineA[i, 2]), deg2rad(lon2), deg2rad(lat2))
+        extremite2 = calculdist(deg2rad(lineA[i+1, 1]), deg2rad(lineA[i+1, 2]), deg2rad(lon2), deg2rad(lat2))
         if (extremite1 < RayonB and extremite2 > RayonB) or (extremite1 > RayonB and extremite2 < RayonB):
-            pointcross = mat(lineA[i, 1], lineA[i, 2], lineA[i+1, 1], lineA[i+1, 2])
-            pt = [hstack((pt, pointcross))]
+            pointcross = [lineA[i, 1], lineA[i, 2], lineA[i+1, 1], lineA[i+1, 2]]
+            pt = np.c_[pt, pointcross]
     return pt
 
 def eqdroite(x1, y1, x2, y2):
@@ -64,7 +64,7 @@ def pointinter(eq1, eq2, lon1, lon11, lon2, lon22):
         return pt
 
 def calculdist(lon1, lat1, lon2, lat2):
-    d = 2*math.asin(math.sqrt((math.sin((lat1-lat2)/2))**2+math.cos(lat1)*math.cos(lat2)*(math.sin((lon2-lon1)/2))**2))
+    d = 2*math.asin(math.sqrt((math.sin((lat1-lat2)/2))**2 + math.cos(lat1)*math.cos(lat2)*(math.sin((lon2-lon1)/2))**2))
     d = d*6371
     return d
 
@@ -91,8 +91,6 @@ def degre2km(points):
     points[:2] = points[:2] * dlat
     points = np.hstack(points, [dlon, dlat])
 
-#Tracepolygone 函数未处理
-
 def calculangle(lon1, lat1, lon2, lat2):
     lon1 = deg2rad(lon1)
     lat1 = deg2rad(lat1)
@@ -100,8 +98,6 @@ def calculangle(lon1, lat1, lon2, lat2):
     lat2 = deg2rad(lat2)
     tc1 = mod(atan2(sin(lon2-lon1)*cos(lat2),cos(lat1)*sin(lat2)-sin(lat1)*cos(lat2)*cos(lon2-lon1)), 2*pi)
     return tcl
-
-#Tracebestline函数未处理
 
 def fonctx(a, x, b):
     y = a*x + b
