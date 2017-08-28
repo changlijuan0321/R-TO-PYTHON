@@ -16,13 +16,13 @@ def runangle(target, delaysNnodes, lonlatNnodes, rtt):
     nblandmark = len(delaysNnodes)
     rttNnodes = rtt[goodlandRTT]
     posminrtt = goodlandRTT.index(rttNnodes)
-    figure = str.join("Figure-R/location_estimate_of_",target,".png")
+    figure = "Figure-R/location_estimate_of_" + target + ".png"
 
     #boolpolygone is a variable to test whether it has a polygon or not
     boolpolygone = 0
     mindelaysNodes = min(delaysNodes)
     pos = delaysNodes.index(mindelaysNodes)
-    ficslt = str.join("Bonpoint/zonecross-", target)
+    ficslt = "Bonpoint/zonecross-" +  target
 
     if os.path.exists(ficslt):
         with open('ficrslt.txt') as f:

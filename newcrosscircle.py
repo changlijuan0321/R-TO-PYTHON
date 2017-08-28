@@ -39,7 +39,7 @@ def newcrosscircle(target, delaysNnodes, lonlatNnodes):
     nomfic = "Crossingpoint/crossingpoint"+target
     f = open(nomfic, 'w')
     kl = 0
-    indice = 1
+    indice = 0
     bon = 0
     #"bon"表示是否有交叉点
 
@@ -87,9 +87,9 @@ def newcrosscircle(target, delaysNnodes, lonlatNnodes):
                                 D2 = calculdist(deg2rad(ptcross[1]), deg2rad(ptcross[2]), deg2rad(lon2), deg2rad(lat2))
                                 if(D1 <= R1 and D2 <= R2):
                                     if(ptcross[1] >= -180 and ptcross[1] <= 180) and (ptcross[2] >= -90 and ptcross[2] <= 90):
-                                        f.write(ptcross)
+                                        f.write(str(ptcross[1: -1]))
                                         bon += 1
-    indice += 2
+        indice += 2
     return bon
 
 if __name__ == '__main__':
