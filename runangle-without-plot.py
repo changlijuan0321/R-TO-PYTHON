@@ -10,13 +10,15 @@ import os
 import math
 import numpy as np
 #import lib.tools
-from subfunctions import *  
+
+from subfunctions import * 
+from io import StringIO 
 
 def runangle(target, delaysNnodes, lonlatNnodes, rtt):
     nblandmark = len(delaysNnodes)
     # rtt contains the min RTT between target host and landmarks
     #TODO
-    goodlandRTT = [1,nblandmark]
+    goodlandRTT = [1, nblandmark]
     rttNnodes = [goodlandRTT]
     # posminrtt = goodlandRTT.index(rttNnodes)
     figure = "Figure-R/location_estimate_of_" + target + ".png"
@@ -25,46 +27,49 @@ def runangle(target, delaysNnodes, lonlatNnodes, rtt):
     boolpolygone = 0
     mindelaysNodes = min(delaysNodes)
     pos = delaysNodes.index(mindelaysNodes)
-    ficrslt = "Bonpoint/zonecross-" +  target + ".png"
+    ficrslt = "Bonpoint/zonecross-" +  target
     # we test if the file zonecross exits which expressed the targeted host is localizable
     if os.path.exists(ficrslt):
-        with open(ficrslt, 'w') as f:
+        with open(ficrslt, 'r') as f:
             # we test if we have no crossing point
-            if os.path.getsize('ficrslt'):
-                # TODO count.fields 计算每行的字段数
-                with open('Rslt_localisation/estimate-loc.dat') as f:
-                    f.write([target, lonlatNnodes[pos, 0], lonlatNnodes[pos, 1]])
+            if boolpolygone != 0:
+                # TODO 
+                with open('Rslt_localisation/estimate-loc.dat', 'w') as f:
+                    f.write(str([target, lonlatNnodes[pos, 0], lonlatNnodes[pos, 1]]))
                 LONGITUDE = lonlatNnodes[pos, 0]
                 LATITUDE = lonlatNnodes[pos, 1]
-                with open('Rslt_localisation/rayon-centroid-v2.dat') as f:
-                    f.write([target, lonlatNnodes[pos]])
+                with open('Rslt_localisation/rayon-centroid-v2.dat', 'w') as f:
+                    f.write(str([target, lonlatNnodes[pos]]))
                 # calculation surface of the circle
                 AIRE = math.pi*(delaysNnodes[pos]**2)
-                with open('Rslt_localisation/aire-polygone-v2.dat') as f:
-                    f.write([target, lonlatNnodes[pos]])
+                with open('Rslt_localisation/aire-polygone-v2.dat', 'w') as f:
+                    f.write(str([target, lonlatNnodes[pos]]))
                 rayon = delaysNnodes[pos]
                 boolpolygone = 2
             # we have crossing points
             else:
-                pointcross = np.asmatrix(f.read())   
+                c = StringIO(f.read())     
+                pointcross = np.loadtxt(c, delimiter=',')
                 long = len(pointcross[:, 1])
-                angles = np.mat(np.zeros(long, 1))
+                angles = np.zeros((long, 1))
                 
                 #计算起点，距离target最近的点（x0,y0），到其他所有交点的角度
-                posmin = pointcross[:, 1].index()
+                #posmin = pointcross.index(min(pointcross[:, 0]))
+                #TODO
+                posmin = 1
                 xzero = pointcross[posmin, 0]
                 yzero = pointcross[posmin, 1]
-                for j in range(0,long):
-                    angles[j] = rad2deg(calculangle(xzero, yzero, pointcross[j, 1], pointcross[j,2]))
+                for j in range(0, long):
+                    angles[j] = rad2deg(calculangle(xzero, yzero, pointcross[j, 0], pointcross[j,1]))
                 #排序角度
                 angles = sorted(angles)
                 #以距离target最近的点为起点，按角度排序排列其他的点的集合pointordonne
-                pointordonne = np.mat(np.zeros(2,long))
+                pointordonne = np.zeros((2, long))
                 if len(angles) >= 3:
                     compteur = 1
                     while compteur <= long:
-                        for k in range(1,long):
-                            ang = rad2deg(calculangle(xzero, yzero, pointcross[k, 1], pointcross[k, 2]))
+                        for k in range(1, long):
+                            ang = rad2deg(calculangle(xzero, yzero, pointcross[k, 0], pointcross[k, 1]))
                             if ang == angles:
                                 pointordonne[compteur, 0] = pointcross[k, 0]
                                 pointordonne[compteur, 1] = pointcross[k, 1]
@@ -81,15 +86,15 @@ def runangle(target, delaysNnodes, lonlatNnodes, rtt):
                     #如果面积不为0
                     if CxCyRAIRE[3] != 0 and CxCyRAIRE[3] != 1:
                         # we trace the centroid of the polygon (estimate of the location of the point)
-                        with open('Rslt_localisation/estimate-loc.dat') as f:
-                            f.write([target, formatC(CxCyRAIRE[0], digits = 2, format = "f"), formatC(CxCyRAIRE[1], digits = 2, format = "f")])
+                        with open('Rslt_localisation/estimate-loc.dat', 'w') as f:
+                            f.write(str([target, roun(CxCyRAIRE[0], 2), round(CxCyRAIRE[1], 2)]))
 
                         LONGITUDE = CxCyRAIRE[0]
                         LATITUDE = CxCyRAIRE[1]
-                        with open('Rslt_localisation/rayon-centroid-v2.dat') as f:
-                            f.write([target, CxCyRAIRE[2]])
-                        with open('Rslt_localisation/aire-polygone-v2.dat') as f:
-                            f.write([target, CxCyRAIRE[3]])
+                        with open('Rslt_localisation/rayon-centroid-v2.dat', 'w') as f:
+                            f.write(str([target, CxCyRAIRE[2]]))
+                        with open('Rslt_localisation/aire-polygone-v2.dat', 'w') as f:
+                            f.write(str([target, CxCyRAIRE[3]]))
                         # we have a polygon we put the variable a 1
                         boolpolygone = 1
 
@@ -99,12 +104,12 @@ def runangle(target, delaysNnodes, lonlatNnodes, rtt):
                         LONGITUDE = centroid.polygon(pointcross)[0]
                         LATITUDE  = centroid.polygon(pointcross)[1]
                         
-                        with open('Rslt_localisation/estimate-loc.dat') as f:
-                            f.write([target, LONGITUDE, LATITUDE])
-                        with open('Rslt_localisation/rayon-centroid-v2.dat') as f:
-                            f.write([target, rayon])   
-                        with open('Rslt_localisation/aire-polygone-v2.dat') as f:
-                            f.write([target, aire])
+                        with open('Rslt_localisation/estimate-loc.dat', 'w') as f:
+                            f.write(str([target, LONGITUDE, LATITUDE]))
+                        with open('Rslt_localisation/rayon-centroid-v2.dat', 'w') as f:
+                            f.write(str([target, rayon]))   
+                        with open('Rslt_localisation/aire-polygone-v2.dat', 'w') as f:
+                            f.write(str([target, aire]))
                     # if AIRE == 0 we have identical points in our matrix and in fact we have only 2 points or 1 point we
                     # look for the barycentre
                     else:
@@ -127,31 +132,31 @@ def runangle(target, delaysNnodes, lonlatNnodes, rtt):
                         CxCyRAIRE[0] = lonbar
                         CxCyRAIRE[1] = latbar
 
-                        with open('Rslt_localisation/estimate-loc.dat') as f:
-                            f.write([target, formatC(CxCyRAIRE[0], digits = 2, format = "f"), formatC(CxCyRAIRE[1], digits = 2, format = "f")])
+                        with open('Rslt_localisation/estimate-loc.dat', 'w') as f:
+                            f.write(str([target, formatC(CxCyRAIRE[0], digits = 2, format = "f"), formatC(CxCyRAIRE[1], digits = 2, format = "f")]))
                     
                         LONGITUDE = CxCyRAIRE[0]
                         LATITUDE = CxCyRAIRE[1] 
                         rayon = CxCyRAIRE[2]
                         boolpolygone = 2
 
-                        with open('Rslt_localisation/rayon-centroid-v2.dat') as f:
-                            f.write([target, rayon])
-                        with open('Rslt_localisation/aire-polygone-v2.dat') as f:
-                            f.write([target, aire])      
+                        with open('Rslt_localisation/rayon-centroid-v2.dat', 'w') as f:
+                            f.write(str([target, rayon]))
+                        with open('Rslt_localisation/aire-polygone-v2.dat', 'w') as f:
+                            f.write(str([target, aire]))      
                 #只有两个交点，不够构成一个多边形	
                 else:
                     #计算错误区域，我们有两个属于所有圆的两个点 
                     #calculate error area,we have two points that belong to all circles
                     if len(angles) == 2:
-                        diametre = calculdist(deg2rad(pointcross[0, 0]), deg2rad(pointcross[0, 1]), deg2rad(pointcross[1, 2]), deg2rad(pointcross[1, 1]))
+                        diametre = calculdist(deg2rad(pointcross[0, 0]), deg2rad(pointcross[0, 1]), deg2rad(pointcross[1, 0]), deg2rad(pointcross[1, 1]))
                         rayon = diametre/2
                         A2 = math.pi*(rayon**2)
 
-                        with open('Rslt_localisation/aire-polygone-v2.dat') as f:
-                            f.write([target, A2])
-                        with open('Rslt_localisation/rayon-centroid-v2.dat') as f:
-                            f.write([target, rayon])
+                        with open('Rslt_localisation/aire-polygone-v2.dat', 'w') as f:
+                            f.write(str([target, A2]))
+                        with open('Rslt_localisation/rayon-centroid-v2.dat', 'w') as f:
+                            f.write(str([target, rayon]))
                         lonbar = 0
                         latbar = 0
 
@@ -162,36 +167,35 @@ def runangle(target, delaysNnodes, lonlatNnodes, rtt):
                         lonbar = lonbar/long
                         latbar = latbar/long
 
-                        with open('Rslt_localisation/estimate-loc.dat') as f:
-                            f.write([target,formatC(lonbar, digits = 2, format = "f"), formatC(latbar, digits = 2, format = "f")])
-                        
+                        with open('Rslt_localisation/estimate-loc.dat', 'w') as f:
+                            f.write(str([target, round(lonbar,  2), round(latbar,  2)]))
                         LONGITUDE = lonbar
                         LATITUDE = latbar
                         boolpolygone = 2
                     else:
                         # we have a point belonging to all the circles
                         rayon = delaysNnodes[pos]
-                        with open('Rslt_localisation/rayon-centroid-v2.dat') as f:
-                            f.write([target, rayon])
+                        with open('Rslt_localisation/rayon-centroid-v2.dat', 'w') as f:
+                            f.write(str([target, rayon]))
 
                         A2 = math.pi*(rayon**2)
 
-                        with open('Rslt_localisation/aire-polygone-v2.dat') as f:
-                            f.write([target, A2])
-                        with open('Rslt_localisation/estimate-loc.dat') as f:
-                            f.write([target, lonlatNnodes[pos, 1], lonlatNnodes[pos, 2]])
+                        with open('Rslt_localisation/aire-polygone-v2.dat', 'w') as f:
+                            f.write(str([target, A2]))
+                        with open('Rslt_localisation/estimate-loc.dat', 'w') as f:
+                            f.write(str([target, lonlatNnodes[pos, 0], lonlatNnodes[pos, 1]]))
                     
                         LONGITUDE = lonlatNnodes[pos, 0]
                         LATITUDE = lonlatNnodes[pos, 1]
                         boolpolygone = 2
     # ficslt 文件不存在，即无法定位
     else:
-        with open('Rslt_localisation/rayon-centroid-v2.dat') as f:
-            f.write([target, 0])  
-        with open('Rslt_localisation/aire-polygone-v2.dat') as f:
-            f.write([target, 0])
-        with open('Rslt_localisation/estimate-loc.dat') as f:
-            f.write([target, 0])
+        with open('Rslt_localisation/rayon-centroid-v2.dat', 'w') as f:
+            f.write(str([target, 0]))  
+        with open('Rslt_localisation/aire-polygone-v2.dat', 'w') as f:
+            f.write(str([target, 0]))
+        with open('Rslt_localisation/estimate-loc.dat', 'w') as f:
+            f.write(str([target, 0]))
 
 
 

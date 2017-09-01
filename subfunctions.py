@@ -34,15 +34,15 @@ def cross(lon1, lat1, R1, lon2, lat2, R2):
 
 def findsegments(lineA, RayonB, lon2, lat2):
     pt = [np.mat(np.zeros((3, 3)))]
-    extremite1 = calculdist(deg2rad(lineA[1, 1]), deg2rad(lineA[1, 2]), deg2rad(lon2), deg2rad(lat2))
-    extremite2 = calculdist(deg2rad(lineA[2, 1]), deg2rad(lineA[2, 2]), deg2rad(lon2), deg2rad(lat2))
+    extremite1 = calculdist(deg2rad(lineA[0, 0]), deg2rad(lineA[0, 1]), deg2rad(lon2), deg2rad(lat2))
+    extremite2 = calculdist(deg2rad(lineA[1, 0]), deg2rad(lineA[1, 1]), deg2rad(lon2), deg2rad(lat2))
     if (extremite1 < RayonB and extremite2 > RayonB) or (extremite1 > RayonB and extremite2 < RayonB):
-        pt = [lineA[1, 1], lineA[1, 2], lineA[2, 1], lineA[2, 2]]
-    for i in range(2, 100):
-        extremite1= calculdist(deg2rad(lineA[i, 1]), deg2rad(lineA[i, 2]), deg2rad(lon2), deg2rad(lat2))
-        extremite2 = calculdist(deg2rad(lineA[i+1, 1]), deg2rad(lineA[i+1, 2]), deg2rad(lon2), deg2rad(lat2))
+        pt = [lineA[0, 0], lineA[0, 1], lineA[1, 0], lineA[1, 1]]
+    for i in range(1, 100):
+        extremite1= calculdist(deg2rad(lineA[i, 0]), deg2rad(lineA[i, 1]), deg2rad(lon2), deg2rad(lat2))
+        extremite2 = calculdist(deg2rad(lineA[i+1, 0]), deg2rad(lineA[i+1, 1]), deg2rad(lon2), deg2rad(lat2))
         if (extremite1 < RayonB and extremite2 > RayonB) or (extremite1 > RayonB and extremite2 < RayonB):
-            pointcross = [lineA[i, 1], lineA[i, 2], lineA[i+1, 1], lineA[i+1, 2]]
+            pointcross = [lineA[i, 0, lineA[i, 1], lineA[i+1, 0], lineA[i+1, 1]]
             pt = np.c_[pt, pointcross]
     return pt
 
@@ -53,8 +53,8 @@ def eqdroite(x1, y1, x2, y2):
     return list2
 
 def pointinter(eq1, eq2, lon1, lon11, lon2, lon22):
-    x = (eq2[2]-eq1[2]) / (eq1[1]-eq2[1])
-    y = (eq2[1]*x) + eq2[2]
+    x = (eq2[1]-eq1[1]) / (eq1[0]-eq2[0])
+    y = (eq2[1]*x) + eq2[1]
     pt = ["init", "init"]
     matlon = np.mat((lon1, lon11, lon2, lon22), size=(1, 1))
     maxlon = max(matlon)
@@ -80,24 +80,25 @@ def degre2km(points):
     lon2km = np.mat(np.zeros(1, len(points[:1]) - 1))
     lat2km = np.mat(np.zeros(1, len(points[:1]) - 1))
     for i in range(2, len(points[:1])-1):
-        D1 = calculdist(deg2rad(points[1,1]), deg2rad(points[1,2]), deg2rad(points[i,1]), deg2rad(points[i,2]))
-        D2 = calculdist(deg2rad(points[1,1]+1), deg2rad(points[1,2]), deg2rad(points[i,1]), deg2rad(points[i,2]))
+        D1 = calculdist(deg2rad(points[0, 0]), deg2rad(points[0, 1]), deg2rad(points[i, 0]), deg2rad(points[i, 1]))
+        D2 = calculdist(deg2rad(points[0, 0]+1), deg2rad(points[0, 1]), deg2rad(points[i, 0]), deg2rad(points[i, 1]))
         lon2km[i] = abs(D2 - D1)
-        D3 = calculdist(deg2rad(points[1,1]),deg2rad(points[1,2]+1),deg2rad(points[i,1]),deg2rad(points[i,2]))
+        D3 = calculdist(deg2rad(points[0, 0]), deg2rad(points[0, 1]+1), deg2rad(points[i,0]), deg2rad(points[i,1]))
         lat2km[i] = abs(D1 - D3)
     dlon = np.mean(lon2km)
     dlat = np.mean(lat2km)
     points[:1] = points[:1] * dlon
     points[:2] = points[:2] * dlat
-    points = np.hstack(points, [dlon, dlat])
+    points2 = [points, [dlon, dlat]]
+    return points2
 
 def calculangle(lon1, lat1, lon2, lat2):
     lon1 = deg2rad(lon1)
     lat1 = deg2rad(lat1)
     lon2 = deg2rad(lon2)
-    lat2 = deg2rad(lat2)
-    tc1 = mod(atan2(sin(lon2-lon1)*cos(lat2),cos(lat1)*sin(lat2)-sin(lat1)*cos(lat2)*cos(lon2-lon1)), 2*pi)
-    return tcl
+    lat2 = deg2rad(lat2) 
+    tc1 = mod(math.atan2(math.sin(lon2-lon1) * math.cos(lat2), math.cos(lat1)*math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(lon2-lon1)), 2*math.pi)
+    return tc1
 
 def fonctx(a, x, b):
     y = a*x + b
@@ -106,6 +107,9 @@ def fonctx(a, x, b):
 def mod(y, x):
     resultat = y - x*math.floor(y/x)
     return resultat
+
+
+
 
 
 
