@@ -7,9 +7,8 @@ def airepolygone(matrix, pointenKM):
     long = len(matrix[ :1])
     aire = np.mat(np.zeros(long, 1))
     for j in range(1, long-1):
-        aire[j] = pointenKM[j, 1] * pointenKM[(j+1), 2] - pointenKM[(j+1), 1] * pointenKM[j, 2]
-    aire[long] = pointenKM[long,1] * pointenKM[1, 2] - pointenKM[1, 1] * pointenKM[long, 2]
-
+        aire[j] = pointenKM[j, 0] * pointenKM[(j+1), 1] - pointenKM[(j+1),0] * pointenKM[j, 1]
+    aire[long] = pointenKM[long-1, 0] * pointenKM[0, 1] - pointenKM[0, 0]*pointenKM[long-1, 1]
     #计算多边形的面积
     nbelement = len(scipy.spatial.ConvexHull(matrix))
 
