@@ -9,10 +9,10 @@ import sys
 import os
 import math
 import numpy as np
-#import lib.tools
-
+#import lib.tool
 from subfunctions import * 
 from io import StringIO 
+import scipy
 
 def runangle(target, delaysNnodes, lonlatNnodes, rtt):
     nblandmark = len(delaysNnodes)
@@ -101,9 +101,9 @@ def runangle(target, delaysNnodes, lonlatNnodes, rtt):
                     elif CxCyRAIRE[3] == 1:
                         aire = area.polygon(pointcross)
                         rayon = sqrt(aire/math.pi)
-                        LONGITUDE = centroid.polygon(pointcross)[0]
-                        LATITUDE  = centroid.polygon(pointcross)[1]
-                        
+                        LONGITUDE = scipy.cluster.hierarchy.centroid(pointcross[0])
+                        LATITUDE  = scipy.cluster.hierarchy.centroid(pointcross[1])
+                        #TODO 
                         with open('Rslt_localisation/estimate-loc.dat', 'w') as f:
                             f.write(str([target, LONGITUDE, LATITUDE]))
                         with open('Rslt_localisation/rayon-centroid-v2.dat', 'w') as f:
@@ -208,7 +208,7 @@ if __name__ == '__main__':
         [10.01, 20.21]
     ])
     rtt = 12
-    runangle(target, delaysNodes, lonlatNnodes,rtt)
+    runangle(target, delaysNodes, lonlatNnodes, rtt)
         
 
 
