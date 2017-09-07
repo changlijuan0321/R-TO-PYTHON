@@ -1,10 +1,3 @@
-## This function provide the localisation of a target without
-## plotting the points in a figure. "delaysNnodes" contains the
-## geographical distance constraint between landmarks and target
-## hosts. "lonlatNnodes" contains the position of all succesfull
-## landmarks. "target" the names of target hosts
-
-from pandas import read_csv
 import sys
 import os
 import math
@@ -15,6 +8,13 @@ from io import StringIO
 import scipy
 
 def runangle(target, delaysNnodes, lonlatNnodes, rtt):
+    """This function provide the localisation of a target without
+    plotting the points in a figure. "delaysNnodes" contains the
+    geographical distance constraint between landmarks and target
+    hosts. "lonlatNnodes" contains the position of all succesfull
+    landmarks. "target" the names of target hosts
+
+    """
     nblandmark = len(delaysNnodes)
     # rtt contains the min RTT between target host and landmarks
     #TODO
@@ -23,12 +23,14 @@ def runangle(target, delaysNnodes, lonlatNnodes, rtt):
     # posminrtt = goodlandRTT.index(rttNnodes)
     figure = "Figure-R/location_estimate_of_" + target + ".png"
     # we output the result in png format, and create the file .png
-    # boolpolygone is a variable to test whether it has a polygon or not
+    # boolpolygone is a variable to test whether it has a polygon or
+    # not
     boolpolygone = 0
     mindelaysNodes = min(delaysNodes)
     pos = delaysNodes.index(mindelaysNodes)
     ficrslt = "Bonpoint/zonecross-" +  target
-    # we test if the file zonecross exits which expressed the targeted host is localizable
+    # we test if the file zonecross exits which expressed the targeted
+    # host is localizable
     if os.path.exists(ficrslt):
         with open(ficrslt, 'r') as f:
             # we test if we have no crossing point

@@ -1,3 +1,4 @@
 *.whl
 .vscode/
 .idea/
+__pycache__/
