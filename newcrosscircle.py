@@ -76,8 +76,10 @@ def newcrosscircle(target, delaysNnodes, lonlatNnodes):
                     for ind in range(0, ptsegments2):
                         # 找到 lineB 与 lineA 的一条线段 eq2
                         if ptsegments2[ind, 0]!=0:
-                            eq2 = eqdroite(ptsegments2[ind, 0], ptsegments2[ind, 1],
-                                           ptsegments2[ind, 2], ptsegments2[ind, 3])
+                            eq2 = eqdroite(ptsegments2[ind, 0],
+                                           ptsegments2[ind, 1],
+                                           ptsegments2[ind, 2],
+                                           ptsegments2[ind, 3])
                             # 计算两个直线的交点 ptcross
                             ptcross = pointinter(eq1, eq2,
                                                  ptsegments2[comp, 1],

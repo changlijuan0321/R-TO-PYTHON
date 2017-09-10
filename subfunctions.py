@@ -10,7 +10,8 @@ def ptlonlat(ln1, lt1, dist, tcin):
     lon1 = np.pi * (ln1 / 180)
     lat1 = np.pi * (lt1 / 180)
     tc = np.pi * (tcin / 180)
-    lat = np.arcsin(np.sin(lat1) * np.cos(d) + np.cos(lat1) * np.sin(d) * np.cos(tc))
+    lat = np.arcsin(np.sin(lat1) * np.cos(d) +
+                    np.cos(lat1) * np.sin(d) * np.cos(tc))
     dlon = np.arctan2(np.sin(tc) * np.sin(d) * np.cos(lat1),
                       np.cos(d) - np.sin(lat1) * np.sin(lat))
     lon = ((lon1 - dlon + np.pi) % (2 * np.pi)) - np.pi
@@ -23,28 +24,26 @@ def plotcircle(lon, lat, r):
     return np.array(list(points))
 
 def cross(lon1, lat1, R1, lon2, lat2, R2):
-    distC1C2 = calculdist(deg2rad(lon1), deg2rad(lat1),
-                          deg2rad(lon2), deg2rad(lat2))
-    if abs(R1-R2) < distC1C2 and distC1C2 < (R1+R2):
-        rep = 1
+    distC1C2 = calculdist(lon1, lat1, lon2, lat2)
+    if abs(R1 - R2) < distC1C2 and distC1C2 < (R1 + R2):
+        return True
     else:
-        rep = 0
-    return rep
+        return False
 
-def findsegments(lineA, RayonB, lon2, lat2):
+def findsegments(lineA, radiusB, lon2, lat2):
     pt = np.zeros((3, 3))
-    extremite1 = calculdist(deg2rad(lineA[0, 0]), deg2rad(lineA[0, 1]),
-                            deg2rad(lon2), deg2rad(lat2))
-    extremite2 = calculdist(deg2rad(lineA[1, 0]), deg2rad(lineA[1, 1]),
-                            deg2rad(lon2), deg2rad(lat2))
-    if ((extremite1 < RayonB and extremite2 > RayonB) or
-        (extremite1 > RayonB and extremite2 < RayonB)):
+    point1 = calculdist(lineA[0, 0], lineA[0, 1], lon2, lat2)
+    point2 = calculdist(lineA[1, 0], lineA[1, 1], lon2, lat2)
+    if ((point1 < radiusB and point2 > radiusB) or
+        (point1 > radiusB and point2 < radiusB)):
         pt = [lineA[0, 0], lineA[0, 1], lineA[1, 0], lineA[1, 1]]
-    for i in range(1, 100):
-        extremite1= calculdist(deg2rad(lineA[i, 0]), deg2rad(lineA[i, 1]), deg2rad(lon2), deg2rad(lat2))
-        extremite2 = calculdist(deg2rad(lineA[i+1, 0]), deg2rad(lineA[i+1, 1]), deg2rad(lon2), deg2rad(lat2))
-        if (extremite1 < RayonB and extremite2 > RayonB) or (extremite1 > RayonB and extremite2 < RayonB):
-            pointcross = [lineA[i, 0], lineA[i, 1], lineA[i+1, 0], lineA[i+1, 1]]
+    for i in range(1, 101):
+        point1 = calculdist(lineA[i, 0], lineA[i, 1], lon2, lat2)
+        point2 = calculdist(lineA[i + 1, 0], lineA[i + 1, 1], lon2, lat2)
+        if ((point1 < radiusB and point2 > radiusB) or
+            (point1 > radiusB and point2 < radiusB)):
+            pointcross = [lineA[i, 0], lineA[i, 1],
+                          lineA[i + 1, 0], lineA[i + 1, 1]]
             pt = np.c_[pt, pointcross]
     return pt
 
@@ -65,15 +64,14 @@ def pointinter(eq1, eq2, lon1, lon11, lon2, lon22):
     return pt
 
 def calculdist(lon1, lat1, lon2, lat2):
+    lon1, lat1, lon2, lat2 = map(deg2rad, (lon1, lat1, lon2, lat2))
     d = 2 * np.arcsin(np.sqrt((np.sin((lat1 - lat2) / 2)) ** 2 + np.cos(lat1) * np.cos(lat2) * (np.sin((lon2 - lon1) / 2)) ** 2))
     d = d * 6371
     return d
 
-def deg2rad(x):
-    return x * np.pi/180
+def deg2rad(x): return x * np.pi / 180
 
-def rad2deg(angle):
-    return 180 / np.pi * angle
+def rad2deg(angle): return 180 / np.pi * angle
 
 def degre2km(points):
     lon2km = np.mat(np.zeros(1, len(points[:1]) - 1))
