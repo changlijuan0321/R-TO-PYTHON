@@ -1,17 +1,20 @@
-# Newcrosscircle.R 找到了所有圆两两之间的交集，Goodpoints.R 负责找到出现在所有圆中的点
-# This function seeks the "good points" among the crossing points
-# found before. These good points represent the intersection
-# region of all circles. Good points are any points that are
-# located in all circles. These good points allow us to find the
-# area where we expect that the target host is located. These
-# good points will be the vertices of the polygon. Note that the
-# polygon is the approximation of this intersection region. The
-# longitude and the latitude of good points are saved in a file
-# whose name is the IP address of the given target host and the
-# file is located in the folder "Bonpoint". It should be noted
-# that if we have two good points, the intersection region will
-# be the circle whose diameter is the geographic distance of
-# these two points.
+#!usr/bin/env python3
+# -*- coding:utf-8 -*-
+
+"""Newcrosscircle.R 找到了所有圆两两之间的交集，Goodpoints.R 负责找到出现在所有
+圆中的点This function seeks the "good points" among the crossing points found
+before. These good points represent the intersection region of all circles. Good
+points are any points that are located in all circles. These good points allow
+us to find the area where we expect that the target host is located. These good
+points will be the vertices of the polygon. Note that the polygon is the
+approximation of this intersection region. The longitude and the latitude of
+good points are saved in a file whose name is the IP address of the given target
+host and the file is located in the folder "Bonpoint". It should be noted that
+if we have two good points, the intersection region will be the circle whose
+diameter is the geographic distance of these two points.
+
+"""
+
 import sys
 import os
 import numpy as np

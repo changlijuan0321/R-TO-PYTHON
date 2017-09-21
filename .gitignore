@@ -1,8 +1,4 @@
-*.whl
-.vscode/
-.idea/
-__pycache__/
-Figure-R/*
-Bonpoint/*
-Crossingpoint/*
-Rslt_localisation/*
+*
+!.gitignore
+!README.md
+!*.py
