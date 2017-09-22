@@ -10,11 +10,11 @@ from subfunctions import *
 from io import StringIO 
 import scipy
 
-def runangle(target, delaysNnodes, lonlatNnodes, rtt):
+def runangle(target, delaysNnodes, lonlats, rtt):
     """This function provide the localisation of a target without
     plotting the points in a figure. "delaysNnodes" contains the
     geographical distance constraint between landmarks and target
-    hosts. "lonlatNnodes" contains the position of all succesfull
+    hosts. "lonlats" contains the position of all succesfull
     landmarks. "target" the names of target hosts
 
     """
@@ -29,8 +29,8 @@ def runangle(target, delaysNnodes, lonlatNnodes, rtt):
     # boolpolygone is a variable to test whether it has a polygon or
     # not
     boolpolygone = 0
-    mindelaysNodes = min(delaysNodes)
-    pos = delaysNodes.index(mindelaysNodes)
+    mindelaysNodes = min(delays)
+    pos = delays.index(mindelaysNodes)
     ficrslt = "Bonpoint/zonecross-" +  target
     # we test if the file zonecross exits which expressed the targeted
     # host is localizable
@@ -40,15 +40,15 @@ def runangle(target, delaysNnodes, lonlatNnodes, rtt):
             if boolpolygone != 0:
                 # TODO 
                 with open('Rslt_localisation/estimate-loc.dat', 'w') as f:
-                    f.write(str([target, lonlatNnodes[pos, 0], lonlatNnodes[pos, 1]]))
-                LONGITUDE = lonlatNnodes[pos, 0]
-                LATITUDE = lonlatNnodes[pos, 1]
+                    f.write(str([target, lonlats[pos, 0], lonlats[pos, 1]]))
+                LONGITUDE = lonlats[pos, 0]
+                LATITUDE = lonlats[pos, 1]
                 with open('Rslt_localisation/rayon-centroid-v2.dat', 'w') as f:
-                    f.write(str([target, lonlatNnodes[pos]]))
+                    f.write(str([target, lonlats[pos]]))
                 # calculation surface of the circle
                 AIRE = math.pi*(delaysNnodes[pos]**2)
                 with open('Rslt_localisation/aire-polygone-v2.dat', 'w') as f:
-                    f.write(str([target, lonlatNnodes[pos]]))
+                    f.write(str([target, lonlats[pos]]))
                 rayon = delaysNnodes[pos]
                 boolpolygone = 2
             # we have crossing points
@@ -188,10 +188,10 @@ def runangle(target, delaysNnodes, lonlatNnodes, rtt):
                         with open('Rslt_localisation/aire-polygone-v2.dat', 'w') as f:
                             f.write(str([target, A2]))
                         with open('Rslt_localisation/estimate-loc.dat', 'w') as f:
-                            f.write(str([target, lonlatNnodes[pos, 0], lonlatNnodes[pos, 1]]))
+                            f.write(str([target, lonlats[pos, 0], lonlats[pos, 1]]))
                     
-                        LONGITUDE = lonlatNnodes[pos, 0]
-                        LATITUDE = lonlatNnodes[pos, 1]
+                        LONGITUDE = lonlats[pos, 0]
+                        LATITUDE = lonlats[pos, 1]
                         boolpolygone = 2
     # ficslt 文件不存在，即无法定位
     else:
@@ -206,14 +206,14 @@ def runangle(target, delaysNnodes, lonlatNnodes, rtt):
 
 if __name__ == '__main__':
     target = "123.123.123.123"
-    delaysNodes = [10, 20, 30]
-    lonlatNnodes = np.array([
+    delays = [10, 20, 30]
+    lonlats = np.array([
         [30.01, 50.21],
         [40.01, 60.21],
         [10.01, 20.21]
     ])
     rtt = 12
-    runangle(target, delaysNodes, lonlatNnodes, rtt)
+    runangle(target, delays, lonlats, rtt)
         
 
 
