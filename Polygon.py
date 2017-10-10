@@ -1,58 +1,40 @@
 #!usr/bin/env python3
 # -*- coding:utf-8 -*-
 
-import math
+
 import numpy as np
 from Utils import *
 from scipy.spatial import ConvexHull
 
 
-def airepolygone(matrix, pointenKM):
-    long = len(matrix[:, 1])
-    aire = np.mat(np.zeros(long, 1))
-    for j in range(1, long-1):
-        aire[j] = (pointenKM[j, 0] * pointenKM[(j+1), 1] -
-                   pointenKM[(j+1), 0] * pointenKM[j, 1])
-    aire[long] = (pointenKM[long-1, 0] * pointenKM[0, 1] -
-                  pointenKM[0, 0] * pointenKM[long-1, 1])
-    # 计算多边形的面积
-    nbelement = len(scipy.spatial.ConvexHull(matrix))
+def polygon(ptorder, ptkm):
+    """
+    A = sigma(x_i * y_i+1 - x_i+1 * y_i) / 2
+    Cx = sigma((x_i + x_i+1) * (x_i * y_i+1 - x_i+1 * y_i)) / 6A
+    Cy = sigma((y_i + y_i+1) * (x_i * y_i+1 - x_i+1 * y_i)) / 6A
+    """
+    if len(ConvexHull(ptorder).vertices) != len(ptorder):
+        return [0, 0, 0, 1]
 
-    if nbelement == long:
-        AIRE = (1/2) * sum(aire)
-    else:
-        AIRE = -1
+    AREA = polyarea(ptkm[:-1])
+    Cx, Cy = polycent(ptkm[:-1]) / ptkm[-1]
+    R = np.sqrt(abs(AREA) / np.pi)
 
-    matCx = np.mat(np.zeros(long, 1))
-    matCy = np.mat(np.zeros(long, 1))
+    return [Cx, Cy, R, abs(AREA)]
 
-    for h in range(1, long-1):
-        matCx[h] = ((pointenKM[h, 1] + pointenKM[(h+1), 1]) *
-                    (pointenKM[h, 1] * pointenKM[(h+1), 2] -
-                     pointenKM[(h+1), 1] * pointenKM[h, 2]))
-        matCy[h] = ((pointenKM[h, 2] + pointenKM[(h+1), 2]) *
-                    (pointenKM[h, 1] * pointenKM[(h+1), 2] -
-                     pointenKM[(h+1), 1] * pointenKM[h, 2]))
 
-    matCx[long] = ((pointenKM[long, 1] + pointenKM[1, 1]) *
-                   ((pointenKM[long, 1] * pointenKM[1, 2]) -
-                    pointenKM[1, 1] * pointenKM[long, 2]))
-    matCy[long] = ((pointenKM[long, 2] + pointenKM[1, 2]) *
-                   ((pointenKM[long, 1] * pointenKM[1, 2]) -
-                    pointenKM[1, 1] * pointenKM[long, 2]))
+def polyarea(pol):
+    x = pol[:, 0]
+    y = pol[:, 1]
+    return 0.5 * (np.dot(x, np.roll(y, -1)) - np.dot(y, np.roll(x, -1)))
 
-    # 计算体心坐标
-    Cx = sum(matCx)
-    Cy = sum(matCy)
-    Cx = (1 / (6 * AIRE) * Cx)
-    Cy = (1 / (6 * AIRE) * Cy)
 
-    # convert Cx and Cy to degree
-    dlon = pointenKM[(long + 1), 1]
-    dlat = pointenKM[(long + 1), 1]
-    Cx = Cx / dlon
-    Cy = Cy / dlat
-
-    R = np.sqrt(abs(AIRE) / math.pi)
-    rslt = [Cx, Cy, R, abs(AIRE)]
-    return rslt
+def polycent(pol):
+    x = pol[:, 0]
+    y = pol[:, 1]
+    a = polyarea(pol)
+    Cx = np.sum((x + np.roll(x, -1)) *
+                (x * np.roll(y, -1) - y * np.roll(x, -1))) / (6 * a)
+    Cy = np.sum((y + np.roll(y, -1)) *
+                (x * np.roll(y, -1) - y * np.roll(x, -1))) / (6 * a)
+    return [Cx, Cy]

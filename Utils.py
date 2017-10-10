@@ -5,7 +5,6 @@
 
 """
 
-import math
 import numpy as np
 
 
@@ -15,8 +14,7 @@ def ptlonlat(ln1, lt1, dist, tcin):
     """
     # dist 转换为相对地球半径的弧度
     d = dist / 6378.16
-    lon1 = deg2rad(ln1)
-    lat1 = deg2rad(lt1)
+    lon1, lat1 = map(deg2rad, [ln1, lt1])
     tc = np.pi * (tcin / 180)
     dlon = np.arctan2(np.sin(tc) * np.sin(d) * np.cos(lat1),
                       np.cos(d) - np.sin(lat1) * np.sin(lat1))
@@ -46,7 +44,7 @@ def cross(lon1, lat1, r1, lon2, lat2, r2):
     交，若相交则返回 True
 
     """
-    distc1c2 = calculdist(lon1, lat1, lon2, lat2)
+    distc1c2 = calcdist(lon1, lat1, lon2, lat2)
     # 排除了相切的情况
     if abs(r1 - r2) < distc1c2 and distc1c2 < (r1 + r2):
         return True
@@ -61,12 +59,11 @@ def findsegments(line_a, radiusB, lon2, lat2):
     points = np.zeros((1, 4))
     # 判断线段 point1->point2 是否与圆 B 相交
     for i in range(np.size(line_a, 0) - 1):
-        distance1 = calculdist(line_a[i, 0], line_a[i, 1], lon2, lat2)
-        distance2 = calculdist(line_a[i + 1, 0], line_a[i + 1, 1], lon2, lat2)
+        distance1 = calcdist(line_a[i, 0], line_a[i, 1], lon2, lat2)
+        distance2 = calcdist(line_a[i + 1, 0], line_a[i + 1, 1], lon2, lat2)
         if (((distance1 < radiusB and distance2 > radiusB) or
              (distance1 > radiusB and distance2 < radiusB))):
-            tmp = np.array([line_a[i, 0], line_a[i, 1],
-                            line_a[i + 1, 0], line_a[i + 1, 1]])
+            tmp = [line_a[i, 0], line_a[i, 1], line_a[i + 1, 0], line_a[i + 1, 1]]
             points = np.vstack((points, tmp))
     return points[1:]
 
@@ -89,14 +86,13 @@ def pointinter(eq1, eq2, lon1, lon11, lon2, lon22):
     y = (eq2[0] * x) + eq2[1]
     pt = []
     matlon = [lon1, lon11, lon2, lon22]
-    maxlon = max(matlon)
-    minlon = min(matlon)
+    maxlon, minlon = max(matlon), min(matlon)
     if x >= minlon and x <= maxlon:
         pt = [x, y]
     return pt
 
 
-def calculdist(lon1, lat1, lon2, lat2, R=6371):
+def calcdist(lon1, lat1, lon2, lat2, R=6371):
     """计算经纬度分别为 (lon1, lat1) 和 (lon2, lat2) 的两个点之间的距离
 
     输入单位为 degree，输出单位为 km
@@ -121,8 +117,7 @@ def calculdist(lon1, lat1, lon2, lat2, R=6371):
     lon1, lat1, lon2, lat2 = map(deg2rad, (lon1, lat1, lon2, lat2))
     havlat = np.sin((lat1 - lat2) / 2)
     havlon = np.sin((lon1 - lon2) / 2)
-    ad = 2 * np.arcsin(
-        np.sqrt(
+    ad = 2 * np.arcsin(np.sqrt(
             (havlat ** 2) + np.cos(lat1) * np.cos(lat2) * (havlon ** 2)))
     d = ad * R
     return d
@@ -143,41 +138,67 @@ def rad2deg(rad):
 
 
 def degre2km(points):
-    lon2km = np.mat(np.zeros(1, len(points[: 1]) - 1))
-    lat2km = np.mat(np.zeros(1, len(points[: 1]) - 1))
-    for i in range(2, len(points[: 1]) - 1):
-        d1 = calculdist(points[0, 0], points[0, 1],
-                        points[i, 0], points[i, 1])
-        d2 = calculdist(points[0, 0] + 1, points[0, 1],
-                        points[i, 0], points[i, 1])
-        d3 = calculdist(points[0, 0], points[0, 1] + 1,
-                        points[i, 0], points[i, 1])
-        lon2km[i] = abs(d1 - d2)
-        lat2km[i] = abs(d1 - d3)
+    lon2km = np.zeros(1)
+    lat2km = np.zeros(1)
+    xzero, yzero = points[0]
+    for point in points[1:]:
+        d1 = calcdist(xzero, yzero, point[0], point[1])
+        d2 = calcdist(xzero + 1, yzero, point[0], point[1])
+        d3 = calcdist(xzero, yzero + 1, point[0], point[1])
+        lon2km = np.append(lon2km, abs(d1 - d2))
+        lat2km = np.append(lat2km, abs(d1 - d3))
     dlon = np.mean(lon2km)
     dlat = np.mean(lat2km)
-    points[: 1] = points[: 1] * dlon
-    points[: 2] = points[: 2] * dlat
-    points2 = [points, [dlon, dlat]]
-    return points2
+    points = points * [dlon, dlat]
+    return np.vstack((points, [dlon, dlat]))
 
 
-def calculangle(lon1, lat1, lon2, lat2):
-    lon1 = deg2rad(lon1)
-    lat1 = deg2rad(lat1)
-    lon2 = deg2rad(lon2)
-    lat2 = deg2rad(lat2)
-    tc1 = mod(math.atan2(math.sin(lon2 - lon1) * math.cos(lat2),
-                         (math.cos(lat1) * math.sin(lat2) -
-                          math.sin(lat1) * math.cos(lat2) *
-                          math.cos(lon2 - lon1))),
-              2 * math.pi)
-    return tc1
+def calcangle(lon1, lat1, lon2, lat2):
+    lon1, lat1, lon2, lat2 = map(deg2rad, (lon1, lat1, lon2, lat2))
+    tc1 = np.mod(
+        np.arctan2(np.sin(lon2 - lon1) * np.cos(lat2),
+                   (np.cos(lat1) * np.sin(lat2) -
+                    np.sin(lat1) * np.cos(lat2) * np.cos(lon2 - lon1))),
+        2 * np.pi
+    )
+    return rad2deg(tc1)
 
 
-# def fonctx(a, x, b):
-#     return a * x + b
+# Tracepolygone <- function(mat){
+#       long<-length(mat[,1])
+#       nbelement<-length(chull(mat))
+#       if( nbelement==long ){
+#         ## on trace les sommets du polygone
+#               for( i in 1:long ){
+#                       points(mat[i,1],mat[i,2],pch=20,cex=0.5)
+#               }
+#         ## on joint les sommet du polygone
+#               for( j in 1:(long-1) ){
+#                       lines(c(mat[j,1], mat[(j+1),1]), c(mat[j,2], mat[(j+1), 2]),
+#                               col="blue")
+#               }
+#         ## joindre le dernier somment du polygone au premier point
+#               lines(c(mat[long,1], mat[1,1]), c(mat[long,2], mat[1,2]), col="blue")
+#       }
+#       title(sub="The area of the tagged polygon represents the confidence region",
+#               col.sub="blue", cex.sub=1)
+# }
 
 
-def mod(y, x):
-    return (y - x * math.floor(y / x))
+# Tracebestline()
+# Tracebestline <- function (z,dists,rawdelays) {
+#   plot(dists[z,], rawdelays[z,], type="n",
+#        xlab=paste("distance (km)"), ylab=paste("delay (ms)"))
+#   points(dists[z,][-z], rawdelays[z,][-z])
+#     ## text(dists[z,][-z],rawdelays[z,][-z],cex=0.7,pos=1)
+#   x <- fonctx(bls[z,2], 15000, bls[z,1])
+#   lines(c(0,15000), c(bls[z,1],x), col="red")
+# }
+
+
+# fonctx
+# fonctx <- function (a,x,b)
+# {
+#   y <- a*x+b
+#   y
+# }

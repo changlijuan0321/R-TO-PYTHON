@@ -1,229 +1,164 @@
 #!usr/bin/env python3
 # -*- coding:utf-8 -*-
 
-import sys
+"""最终对目标实现定位
+
+"""
+
+
 import os
-import math
 import numpy as np
-#import lib.tool
-from subfunctions import * 
-from io import StringIO 
-import scipy
+from Polygon import *
+from Utils import *
 
-def runangle(target, delaysNnodes, lonlats, rtt):
-    """This function provide the localisation of a target without
-    plotting the points in a figure. "delaysNnodes" contains the
-    geographical distance constraint between landmarks and target
-    hosts. "lonlats" contains the position of all succesfull
-    landmarks. "target" the names of target hosts
 
-    """
-    nblandmark = len(delaysNnodes)
+def locate(target, delays, lonlats):
+    # nblandmark = len(delays)
+
     # rtt contains the min RTT between target host and landmarks
-    #TODO
-    goodlandRTT = [1, nblandmark]
-    rttNnodes = [goodlandRTT]
-    # posminrtt = goodlandRTT.index(rttNnodes)
-    figure = "Figure-R/location_estimate_of_" + target + ".png"
+    # rttNnodes <- rtt[goodlandRTT]
+    # posminrtt <- which.min(rttNnodes)
+    # 这两个好像并没有被用到，所以暂时被禁用了
+
     # we output the result in png format, and create the file .png
-    # boolpolygone is a variable to test whether it has a polygon or
-    # not
-    boolpolygone = 0
-    mindelaysNodes = min(delays)
-    pos = delays.index(mindelaysNodes)
-    ficrslt = "Bonpoint/zonecross-" +  target
-    # we test if the file zonecross exits which expressed the targeted
-    # host is localizable
-    if os.path.exists(ficrslt):
-        with open(ficrslt, 'r') as f:
-            # we test if we have no crossing point
-            if boolpolygone != 0:
-                # TODO 
-                with open('Rslt_localisation/estimate-loc.dat', 'w') as f:
-                    f.write(str([target, lonlats[pos, 0], lonlats[pos, 1]]))
-                LONGITUDE = lonlats[pos, 0]
-                LATITUDE = lonlats[pos, 1]
-                with open('Rslt_localisation/rayon-centroid-v2.dat', 'w') as f:
-                    f.write(str([target, lonlats[pos]]))
-                # calculation surface of the circle
-                AIRE = math.pi*(delaysNnodes[pos]**2)
-                with open('Rslt_localisation/aire-polygone-v2.dat', 'w') as f:
-                    f.write(str([target, lonlats[pos]]))
-                rayon = delaysNnodes[pos]
-                boolpolygone = 2
-            # we have crossing points
-            else:
-                c = StringIO(f.read())     
-                pointcross = np.loadtxt(c, delimiter=',')
-                long = len(pointcross[:, 1])
-                angles = np.zeros((long, 1))
-                
-                #计算起点，距离target最近的点（x0,y0），到其他所有交点的角度
-                #posmin = pointcross.index(min(pointcross[:, 0]))
-                #TODO
-                posmin = 1
-                xzero = pointcross[posmin, 0]
-                yzero = pointcross[posmin, 1]
-                for j in range(0, long):
-                    angles[j] = rad2deg(calculangle(xzero, yzero, pointcross[j, 0], pointcross[j,1]))
-                #排序角度
-                angles = sorted(angles)
-                #以距离target最近的点为起点，按角度排序排列其他的点的集合pointordonne
-                pointordonne = np.zeros((2, long))
-                if len(angles) >= 3:
-                    compteur = 1
-                    while compteur <= long:
-                        for k in range(1, long):
-                            ang = rad2deg(calculangle(xzero, yzero, pointcross[k, 0], pointcross[k, 1]))
-                            if ang == angles:
-                                pointordonne[compteur, 0] = pointcross[k, 0]
-                                pointordonne[compteur, 1] = pointcross[k, 1]
-                        compteur = compteur + 1
-                    # calculate the area and center of the polygon(Cx,Cy), R=sqrt(Aire/pi)
-                    # convert degrees to km (lon,lat)->(dlon*lon,dlat*lat)
-                    # dlon and dlat represent the conversion coefficients for each polygon
-                    pointenKM = degre2km(pointordonne)
-                    pointendegre = pointordonne
-                    # calculate of the centroid of the polygon and the radius of the circle of this polygon, airepolygone
-                    # is the function that returns the centroid, radius and area of the polygon, and traces the vertices of the polygon
-                    CxCyRAIRE = airepolygone(pointendegre,pointenKM)
+    # figure = "Figure/location_estimate_of_"
+    # figure_ip = "".join([figure, target, ".png"])
 
-                    #如果面积不为0
-                    if CxCyRAIRE[3] != 0 and CxCyRAIRE[3] != 1:
-                        # we trace the centroid of the polygon (estimate of the location of the point)
-                        with open('Rslt_localisation/estimate-loc.dat', 'w') as f:
-                            f.write(str([target, roun(CxCyRAIRE[0], 2), round(CxCyRAIRE[1], 2)]))
+    # boolpolygon is a variable to test whether it has a polygon or not
+    # boolpolygon = 0
 
-                        LONGITUDE = CxCyRAIRE[0]
-                        LATITUDE = CxCyRAIRE[1]
-                        with open('Rslt_localisation/rayon-centroid-v2.dat', 'w') as f:
-                            f.write(str([target, CxCyRAIRE[2]]))
-                        with open('Rslt_localisation/aire-polygone-v2.dat', 'w') as f:
-                            f.write(str([target, CxCyRAIRE[3]]))
-                        # we have a polygon we put the variable a 1
-                        boolpolygone = 1
+    pos = np.argmin(delays)
+    goodpoint = "Goodpoint/zonecross-"
+    goodpoint_ip = "".join([goodpoint, target])
 
-                    elif CxCyRAIRE[3] == 1:
-                        aire = area.polygon(pointcross)
-                        rayon = sqrt(aire/math.pi)
-                        LONGITUDE = scipy.cluster.hierarchy.centroid(pointcross[0])
-                        LATITUDE  = scipy.cluster.hierarchy.centroid(pointcross[1])
-                        #TODO 
-                        with open('Rslt_localisation/estimate-loc.dat', 'w') as f:
-                            f.write(str([target, LONGITUDE, LATITUDE]))
-                        with open('Rslt_localisation/rayon-centroid-v2.dat', 'w') as f:
-                            f.write(str([target, rayon]))   
-                        with open('Rslt_localisation/aire-polygone-v2.dat', 'w') as f:
-                            f.write(str([target, aire]))
-                    # if AIRE == 0 we have identical points in our matrix and in fact we have only 2 points or 1 point we
-                    # look for the barycentre
-                    else:
-                        for zt in range(1,long):
-                            D = calculdist(deg2rad(pointcross[0, 0]), deg2rad(pointcross[0, 1]), deg2rad(pointcross[zt,0]), deg2rad(pointcross[zt,1]))
-                            if D != 0:
-                                rayon = D/2
-                                CxCyRAIRE[2] = rayon
-                                CxCyRAIRE[3] = math.pi*(rayon**2)
+    ploc = 'Results/estimated-loc.dat'
+    pcen = 'Results/errors.dat'
+    ppol = 'Results/area-polygons.dat'
+    floc = open(ploc, 'a')
+    fcen = open(pcen, 'a')
+    fpol = open(ppol, 'a')
 
-                        lonbar = 0
-                        latbar = 0
+    # 若 goodpoint 文件不存在，则无法定位，直接 return
+    if not os.path.exists(goodpoint_ip):
+        dumpfile(floc, fcen, fpol, target, 0, 0, 0, 0)
+        return
+    # 若文件存在，但是实际上并没有交点，不存在多边形
+    if os.stat(goodpoint_ip).st_size == 0:
+        CX = lonlats[pos, 0]
+        CY = lonlats[pos, 1]
+        RADIUS = delays[pos]
+        AREA = np.pi * RADIUS ** 2
+        dumpfile(floc, fcen, fpol, target, CX, CY, RADIUS, AREA)
+        return
 
-                        for jk in range(0,long):
-                            lonbar = lonbar + pointcross[jk,0]
-                            latbar = latbar + pointcross[jk,1]
+    # 若文件存在，且存在交点
+    goodpts = np.genfromtxt(goodpoint_ip)
+    if len(goodpts) >= 3:
+        # 计算起点，交点中经度最小的点 (x0,y0)，到其他所有交点的角度
+        # angles = np.zeros((len(goodpts), 1))
+        # for j in range(ngoodpts):
+        #     angle[j] = calcangle(xzero, yzero, goodpts[j, 0], goodpts[j, 1])
+        # 对角度进行排序
+        # angles = sorted(angles)
+        # count = 0
+        # while count <= ngoodpts:
+        #     for k in range(1, ngoodpts):
+        #         ang = rad2deg(calcangle(xzero, yzero,
+        #                                 goodpts[k, 0],
+        #                                 goodpts[k, 1]))
+        #         if ang == angles:
+        #             ptorder[count, 0] = goodpts[k, 0]
+        #             ptorder[count, 1] = goodpts[k, 1]
+        #     count = count + 1
+        # 原作者的这段代码是为了把点进行排序，python 里面可以很容易实现
+        posmin = np.argmin(goodpts[:, 0])
+        xzero, yzero = goodpts[posmin]
+        ptorder = np.array(
+            sorted(goodpts,
+                   key=lambda p: calcangle(xzero, yzero, p[0], p[1])))
 
-                        lonbar = lonbar/long
-                        latbar = latbar/long
-                        CxCyRAIRE[0] = lonbar
-                        CxCyRAIRE[1] = latbar
+        # calculate (Cx, Cy) the center of the polygon, R = sqrt(area /
+        # pi). (lon, lat)->(dlon * lon, dlat * lat) dlon and dlat represent the
+        # conversion coefficients for each polygon
+        ptkm = degre2km(ptorder)
+        # calculate the centroid of the polygon and the radius of the
+        # circle of this polygon, airepolygone is the function that
+        # returns the centroid, radius and area of the polygon, and
+        # traces the vertices of the polygon
+        CX, CY, RADIUS, AREA = polygon(ptorder, ptkm)
 
-                        with open('Rslt_localisation/estimate-loc.dat', 'w') as f:
-                            f.write(str([target, formatC(CxCyRAIRE[0], digits = 2, format = "f"), formatC(CxCyRAIRE[1], digits = 2, format = "f")]))
-                    
-                        LONGITUDE = CxCyRAIRE[0]
-                        LATITUDE = CxCyRAIRE[1] 
-                        rayon = CxCyRAIRE[2]
-                        boolpolygone = 2
-
-                        with open('Rslt_localisation/rayon-centroid-v2.dat', 'w') as f:
-                            f.write(str([target, rayon]))
-                        with open('Rslt_localisation/aire-polygone-v2.dat', 'w') as f:
-                            f.write(str([target, aire]))      
-                #只有两个交点，不够构成一个多边形	
-                else:
-                    #计算错误区域，我们有两个属于所有圆的两个点 
-                    #calculate error area,we have two points that belong to all circles
-                    if len(angles) == 2:
-                        diametre = calculdist(deg2rad(pointcross[0, 0]), deg2rad(pointcross[0, 1]), deg2rad(pointcross[1, 0]), deg2rad(pointcross[1, 1]))
-                        rayon = diametre/2
-                        A2 = math.pi*(rayon**2)
-
-                        with open('Rslt_localisation/aire-polygone-v2.dat', 'w') as f:
-                            f.write(str([target, A2]))
-                        with open('Rslt_localisation/rayon-centroid-v2.dat', 'w') as f:
-                            f.write(str([target, rayon]))
-                        lonbar = 0
-                        latbar = 0
-
-                        for j1 in range(0, long):
-                            lonbar = lonbar + pointcross[j1, 0]
-                            latbar = latbar + pointcross[j1, 1]
-
-                        lonbar = lonbar/long
-                        latbar = latbar/long
-
-                        with open('Rslt_localisation/estimate-loc.dat', 'w') as f:
-                            f.write(str([target, round(lonbar,  2), round(latbar,  2)]))
-                        LONGITUDE = lonbar
-                        LATITUDE = latbar
-                        boolpolygone = 2
-                    else:
-                        # we have a point belonging to all the circles
-                        rayon = delaysNnodes[pos]
-                        with open('Rslt_localisation/rayon-centroid-v2.dat', 'w') as f:
-                            f.write(str([target, rayon]))
-
-                        A2 = math.pi*(rayon**2)
-
-                        with open('Rslt_localisation/aire-polygone-v2.dat', 'w') as f:
-                            f.write(str([target, A2]))
-                        with open('Rslt_localisation/estimate-loc.dat', 'w') as f:
-                            f.write(str([target, lonlats[pos, 0], lonlats[pos, 1]]))
-                    
-                        LONGITUDE = lonlats[pos, 0]
-                        LATITUDE = lonlats[pos, 1]
-                        boolpolygone = 2
-    # ficslt 文件不存在，即无法定位
+        # 如果面积不为 0
+        if AREA != 0 and AREA != 1:
+            # we trace the centroid of the polygon (estimate of the location of
+            # the point)
+            # points(CxCyRAIRE[1], CxCyRAIRE[2], pch=4, col="red", cex=0.5)
+            dumpfile(floc, fcen, fpol, target, CX, CY, RADIUS, AREA)
+            return
+            # we have a polygon we put the variable a 1
+            # boolpolygon = 1
+        # 如果外边界不是一个凸包
+        elif AREA == 1:
+            AREA = polyarea(goodpts)
+            RADIUS = np.sqrt(abs(AREA) / np.pi)
+            CX, CY = polycent(goodpts)
+            dumpfile(floc, fcen, fpol, target, CX, CY, RADIUS, AREA)
+            return
+        # 如果多点共线，不存在多边形
+        else:
+            xzero, yzero = goodpts[0]
+            DIAMETER = 0
+            for point in goodpts:
+                tmp = calcdist(xzero, yzero, point[0], point[1])
+                if DIAMETER == 0 or DIAMETER > tmp:
+                    DIAMETER = tmp
+            RADIUS = DIAMETER / 2
+            AREA = np.pi * RADIUS ** 2
+            CX, CY = np.mean(goodpts, 0)
+            dumpfile(floc, fcen, fpol, target, CX, CY, RADIUS, AREA)
+            return
+            # boolpolygon = 2
+    # 只有两个交点，无法构成一个多边形
+    elif len(goodpts) == 2:
+        RADIUS = calcdist(goodpts[0, 0], goodpts[0, 1],
+                          goodpts[1, 0], goodpts[1, 1]) / 2
+        AREA = np.pi * RADIUS ** 2
+        CX, CY = np.mean(goodpts, 0)
+        dumpfile(floc, fcen, fpol, target, CX, CY, RADIUS, AREA)
+        return
+        # boolpolygon = 2
+    # 只有一个交点
     else:
-        with open('Rslt_localisation/rayon-centroid-v2.dat', 'w') as f:
-            f.write(str([target, 0]))  
-        with open('Rslt_localisation/aire-polygone-v2.dat', 'w') as f:
-            f.write(str([target, 0]))
-        with open('Rslt_localisation/estimate-loc.dat', 'w') as f:
-            f.write(str([target, 0]))
+        # we have a point belonging to all the circles
+        CX = lonlats[pos, 0]
+        CY = lonlats[pos, 1]
+        RADIUS = delays[pos]
+        AREA = np.pi * RADIUS ** 2
+        dumpfile(floc, fcen, fpol, target, CX, CY, RADIUS, AREA)
+    return
 
+
+def dumpfile(floc, fcen, fpol, *args):
+    target = args[0]
+    CX = args[1]
+    CY = args[2]
+    RADIUS = args[3]
+    AREA = args[4]
+    floc.write(", ".join([target, str(CX), str(CY)]) + "\n")
+    fcen.write(", ".join([target, str(RADIUS)] + "\n"))
+    fpol.write(", ".join([target, str(AREA)] + "\n"))
+    floc.close()
+    fcen.close()
+    fpol.close()
 
 
 if __name__ == '__main__':
-    target = "123.123.123.123"
-    delays = [10, 20, 30]
-    lonlats = np.array([
-        [30.01, 50.21],
-        [40.01, 60.21],
-        [10.01, 20.21]
+    TEST_TARGET = '60.247.13.2'
+    TEST_DELAYS = np.array([13.0, 10.0, 7.0, 6.0])
+    TEST_LONLATNODES = np.array([
+        [116.2068, 39.9074],
+        [116.3084, 39.9305],
+        [116.3826, 39.8583],
+        [116.4104, 39.9050]
     ])
-    rtt = 12
-    runangle(target, delays, lonlats, rtt)
-        
-
-
-
- 
-
-
-
-
-
-
-
-                
+    # rtt = 12
+    locate(TEST_TARGET, TEST_DELAYS, TEST_LONLATNODES)

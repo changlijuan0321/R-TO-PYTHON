@@ -1,8 +1,11 @@
 #!usr/bin/env python3
 # -*- coding:utf-8 -*-
 
-"""The function Newcrosscircle seeks the crossing points between the circles
-that have as center the geographic position of the landmarks and as radius the
+"""CrossCircle.py 计算以地标为圆心，画圆得到的交点的坐标集合，交给 GoodPoint.py
+处理
+
+The function CrossCircle seeks the crossing points between the circles that
+have as center the geographic position of the landmarks and as radius the
 geographic distance from each landmark toward a given target host. For each
 landmark, it draws the circle whose radius is the geographic distance between
 this landmark and the target host, and centered at the position of the
@@ -14,15 +17,15 @@ host and located in the folder "Crossingpoint"
 ###############################################################################
 delays represents the distance, in km, between a given landmark and the
 target. It can be seen as the radius of the circle where the center is the
-geographic position (longitude,latitude), in degrees, of the landmarks. Lonlat
-contains the longitude et latitude of our set of landmarks. It will be use as
+geographic position (longitude, latitude), in degrees, of the landmarks. Lonlat
+contains the longitude and latitude of our set of landmarks. It will be use as
 the center of our circle.
 
 """
 
 import numpy as np
 from Utils import plotcircle, findsegments, pointinter, \
-                  calculdist, cross, equation
+                  calcdist, cross, equation
 
 
 def crosscircle(target, delays, lonlats):
@@ -39,10 +42,10 @@ def crosscircle(target, delays, lonlats):
     # line_a = np.zeros((101, 2))
     # line_b = np.zeros((101, 2))
 
-    # 在 crossingpoint 目录下新建一个文件 crossingpoint - <ip> ，收集所有圆的交集
-    crossingpoint = "Crossingpoint/crossingpoint - "
+    # 在 crossingpoint 目录下新建一个文件 crossingpoint-<ip> ，收集所有圆的交集
+    crossingpoint = "Crossingpoint/crossingpoint-"
     nomfic = "".join([crossingpoint, target])
-    file = open(nomfic, 'w', encoding="utf-8")
+    cp = open(nomfic, 'w', encoding="utf-8")
 
     current_land, current_circle, count = 0, 0, 0   # count 表示是否有交叉点
     while current_circle < cols:
@@ -84,23 +87,24 @@ def crosscircle(target, delays, lonlats):
                     ptcross = pointinter(eq1, eq2,
                                          first[0], first[2],
                                          second[0], second[2])
-                    # 两个线段不一定在圆内相交，因为 eq1、eq2 只是两个圆相交的线
-                    # 段，但不表示这两者就是对应的，所以如果返回的结果 ptcross
-                    # 非空，则说明两个确实在给定的线段范围内相交，结果就存入之前
-                    # 新建的 nomfic 文件，不然就说明两个线段并没有交点，继续下一
-                    # 个点继续
+                    # 两个线段不一定在圆内相交，因为 eq1、eq2 只是两个圆相交的
+                    # 线段，但不表示这两者就是对应的，所以如果返回的结果
+                    # ptcross 非空，则说明两个确实在给定的线段范围内相交，结果
+                    # 就存入之前新建的 nomfic 文件，不然就说明两个线段并没有交
+                    # 点，继续下一个点继续
                     if ptcross:
-                        d1 = calculdist(ptcross[0], ptcross[1], lon1, lat1)
-                        d2 = calculdist(ptcross[0], ptcross[1], lon2, lat2)
+                        d1 = calcdist(ptcross[0], ptcross[1], lon1, lat1)
+                        d2 = calcdist(ptcross[0], ptcross[1], lon2, lat2)
                         if d1 <= r1 and d2 <= r2:
                             if ((ptcross[0] >= -180 and ptcross[0] <= 180 and
                                  ptcross[1] >= -90 and ptcross[1] <= 90)):
-                                file.write("".join([str(ptcross)[1:-1], "\n"]))
+                                cp.write("".join([str(ptcross)[1:-1], "\n"]))
                                 count += 1
             target_land += 1
             target_circle += 2
         current_land += 1
         current_circle += 2
+    cp.close()
     return count
 
 if __name__ == '__main__':
