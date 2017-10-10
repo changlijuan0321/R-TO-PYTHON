@@ -1,2 +1,5 @@
-*.whl
-.vscode/
+*
+!.gitignore
+!README.md
+!*.py
+Bacnet.py
